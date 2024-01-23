@@ -31,6 +31,7 @@ We are using the apisix offical docker image (3.7.0) to build the container inst
 https://github.com/apache/apisix/blob/master/conf/config.yaml
 In the code comments, it mentioned if you would like to use the different etcd host, like IP or specific host name you have. You can use the environment variable to replace the etcd endpoint. Since we don't know the etcd IP before we create it, in the example, we use the ETCD_HOST environment variable to replcae the localhost etcd endpoint, instead of using the instance labal as our etcd host. Please refer the below example to add etcd host in your apisix config file.
 
+```
 # To configure via environment variables, you can use `${{VAR}}` syntax. For instance:
 #
 # deployment:
@@ -40,7 +41,7 @@ In the code comments, it mentioned if you would like to use the different etcd h
 #   etcd:
 #     host:
 #       - http://${{ETCD_HOST}}:2379
-
+```
 
 ### STEP 4
 
