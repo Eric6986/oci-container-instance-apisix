@@ -1,0 +1,788 @@
+# Title shown in Application Information tab.
+title: OCI container instance stack
+# Sub Title shown in Application Information tab.
+description: This is a Sample OCI Container Instance Stack 
+schemaVersion: 1.0.0
+version: "20231130"
+
+locale: "en"
+variableGroups:
+  - title: "Hidden Variable Group" #------OK------------------------------------
+    visible: false
+    variables:
+      #"variables used internally - not exposed to end user"
+      - tenancy_ocid
+      - region
+      - availability_domain_number
+      - network_strategy_enum
+      - subnet_type_enum
+      - nsg_config_enum
+      - ssh_public_key
+
+  - title: "Container Instance Generic Configuration" #------OK------------------------------------
+    variables:
+      - container_instance_compartment_ocid
+
+
+  - title: "Container Instance Configuration for ETCD" #------OK------------------------------------
+    variables:
+      - container_instance_display_name_etcd
+      - container_instance_hostname_label_etcd
+      - container_instance_compute_shape_etcd
+      - container_instance_flex_shape_ocpus_etcd
+      - container_instance_flex_shape_memory_in_gbs_etcd
+      - container_instance_image_url_etcd
+      - is_public_ip_assigned_etcd
+      - container_restart_policy_etcd
+      - container_instance_tag_etcd
+
+
+  - title: "Container Instance Configuration for APISIX" #------OK------------------------------------
+    variables:
+      - container_instance_display_name_apisix
+      - container_instance_hostname_label_apisix
+      - container_instance_compute_shape_apisix
+      - container_instance_flex_shape_ocpus_apisix
+      - container_instance_flex_shape_memory_in_gbs_apisix
+      - container_instance_image_url_apisix
+      - is_public_ip_assigned_apisix
+      - container_restart_policy_apisix
+      - container_instance_tag_apisix
+
+  - title: "Container Instance Configuration for APISIX Dashboard" #------OK------------------------------------
+    variables:
+      - container_instance_display_name_apisix_dashboard
+      - container_instance_hostname_label_apisix_dashboard
+      - container_instance_compute_shape_apisix_dashboard
+      - container_instance_flex_shape_ocpus_apisix_dashboard
+      - container_instance_flex_shape_memory_in_gbs_apisix_dashboard
+      - container_instance_image_url_apisix_dashboard
+      - is_public_ip_assigned_apisix_dashboard
+      - container_restart_policy_apisix_dashboard
+      - container_instance_tag_apisix_dashboard
+
+
+  - title: "Virtual Cloud Network"
+    variables:
+      - network_compartment_ocid
+      - network_strategy
+      - network_configuration_strategy
+      - vcn_id
+      - vcn_display_name
+      - vcn_dns_label
+      - vcn_cidr_block
+
+
+  - title: "Container Instance Public Subnet"
+    visible: #($network_strategy  == ""Use Existing VCN and Subnet"") OR (network_configuration_strategy ==  "Customize Network Configuration")
+      or:
+        - eq:
+          - network_strategy
+          - "Use Existing VCN and Subnet"
+        - eq:
+          - network_configuration_strategy
+          - "Customize Network Configuration"
+    variables:
+      - subnet_public_id
+      - subnet_public_display_name
+      - subnet_public_dns_label
+      - subnet_public_cidr_block
+      - nsg_configuration_strategy
+
+
+  - title: "Container Instance Private Subnet"
+    visible: #($network_strategy  == ""Use Existing VCN and Subnet"") OR (network_configuration_strategy ==  "Customize Network Configuration")
+      or:
+        - eq:
+          - network_strategy
+          - "Use Existing VCN and Subnet"
+        - eq:
+          - network_configuration_strategy
+          - "Customize Network Configuration"
+    variables:
+      - subnet_private_id
+      - subnet_private_display_name
+      - subnet_private_dns_label
+      - subnet_private_cidr_block
+      - nsg_configuration_strategy
+
+
+######################################################
+##############          VARIABLES        #############
+######################################################
+######################################################
+##############    HIDDEN VARIABLES       #############
+######################################################
+variables:
+  # Hidden variables
+
+  tenancy_ocid:
+    type: string
+    title: Tenancy ID
+    description: The Oracle Cloud Identifier (OCID) for your tenancy
+    required: true
+
+  region:
+    type: oci:identity:region:name
+    title: Region
+    description: The region in which to create all resources
+    required: true
+
+  availability_domain_number:
+    type: string
+    required: false
+    description: Availability Domain Number (Not used)
+
+  ssh_public_key:
+    type: oci:core:ssh:publickey
+    required: true
+    title: Public SSH Key string
+    description: Public SSH Key to access VM via SSH (Not used)
+
+
+#-----------------------------------------------------------------------------------------------------------------------
+
+######################################################
+#####  Container Instance Generic Configuration  #####
+######################################################
+
+
+  container_instance_compartment_ocid:
+    type: oci:identity:compartment:id
+    required: true
+    title: Compartment For Containcer Instance
+    description: The compartment in which to create all Container instance resources
+    default: compartment_ocid
+
+
+#-----------------------------------------------------------------------------------------------------------------------
+
+######################################################
+#######   CONTAINER INSTANCE VARIABLES - ETCD  #######
+######################################################
+
+  container_instance_display_name_etcd:
+    type: string
+    required: true
+    title: ETCD Instance Name
+    description: The name of the ETCD Instance
+
+  container_instance_hostname_label_etcd:
+    type: string
+    required: false
+    title: ETCD DNS Hostname Label
+
+  container_instance_compute_shape_etcd:
+    type: enum
+    enum:
+      - "CI.Standard.E3.Flex"
+      - "CI.Standard.E4.Flex"
+      - "CI.Standard.A1.Flex"
+    default: CI.Standard.E4.Flex
+    title: ETCD Container Instance Shape
+    required: true
+    dependsOn:
+      compartmentId: container_instance_compartment_ocid
+
+  container_instance_flex_shape_ocpus_etcd:
+    visible:
+      eq:
+        - container_instance_compute_shape_etcd
+        - "CI.Standard.E4.Flex"
+    type: integer
+    default: 1
+    title: ETCD Flex Shape OCPUs
+    minimum: 1
+    maximum: 64
+    required: false
+
+  container_instance_flex_shape_memory_in_gbs_etcd:
+    visible:
+      eq:
+        - container_instance_compute_shape_etcd
+        - "CI.Standard.E4.Flex"
+    type: integer
+    default: 4
+    title: ETCD Flex Shape Memory
+    minimum: 1
+    maximum: 64
+    required: false
+
+  container_instance_image_url_etcd:
+    type: string
+    required: true
+    title: ETCD docker image download URL
+
+  is_public_ip_assigned_etcd:
+    type: boolean
+    required: true
+    title: Is need a public IP?
+
+  container_restart_policy_etcd:
+    type: enum
+    title: Restart policy for etcd container instance
+    description: Restart policy for etcd container instance
+    enum:
+      - "ALWAYS"
+      - "NEVER"
+      - "ON_FAILURE"
+    required: true
+    default: "ALWAYS"
+
+  container_instance_tag_etcd:
+    type: string
+    required: true
+    title: ETCD Tag name
+
+
+
+#-----------------------------------------------------------------------------------------------------------------------
+######################################################
+######   CONTAINER INSTANCE VARIABLES - APISIX  ######
+######################################################
+
+  container_instance_display_name_apisix:
+    type: string
+    required: true
+    title: APISIX Instance Name
+    description: The name of the APISIX Instance
+
+  container_instance_hostname_label_apisix:
+    type: string
+    required: false
+    title: APISIX DNS Hostname Label
+
+  container_instance_compute_shape_apisix:
+    type: enum
+    enum:
+      - "CI.Standard.E3.Flex"
+      - "CI.Standard.E4.Flex"
+      - "CI.Standard.A1.Flex"
+    default: CI.Standard.E4.Flex
+    title: APISIX Container Instance Shape
+    required: true
+    dependsOn:
+      compartmentId: container_instance_compartment_ocid
+
+  container_instance_flex_shape_ocpus_apisix:
+    visible:
+      eq:
+        - container_instance_compute_shape_apisix
+        - "CI.Standard.E4.Flex"
+    type: integer
+    default: 1
+    title: APISIX Flex Shape OCPUs
+    minimum: 1
+    maximum: 64
+    required: false
+
+  container_instance_flex_shape_memory_in_gbs_apisix:
+    visible:
+      eq:
+        - container_instance_compute_shape_apisix
+        - "CI.Standard.E4.Flex"
+    type: integer
+    default: 4
+    title: APISIX Flex Shape Memory
+    minimum: 1
+    maximum: 64
+    required: false
+
+  container_instance_image_url_apisix:
+    type: string
+    required: true
+    title: APISIX docker image download URL
+
+  is_public_ip_assigned_apisix:
+    type: boolean
+    required: true
+    title: Is need a public IP?
+
+  container_restart_policy_apisix:
+    type: enum
+    title: Restart policy for etcd container instance
+    description: Restart policy for etcd container instance
+    enum:
+      - "ALWAYS"
+      - "NEVER"
+      - "ON_FAILURE"
+    required: true
+    default: "ALWAYS"
+
+  container_instance_tag_apisix:
+    type: string
+    required: true
+    title: APISIX Tag name
+
+
+
+#-----------------------------------------------------------------------------------------------------------------------
+######################################################
+## CONTAINER INSTANCE VARIABLES - APISIX DASHBOARD  ##
+######################################################
+
+  container_instance_display_name_apisix_dashboard:
+    type: string
+    required: true
+    title: APISIX Dashboard Instance Name
+    description: The name of the APISIX Dashboard Instance
+
+  container_instance_hostname_label_apisix_dashboard:
+    type: string
+    required: false
+    title: APISIX Dashboard DNS Hostname Label
+
+  container_instance_compute_shape_apisix_dashboard:
+    type: enum
+    enum:
+      - "CI.Standard.E3.Flex"
+      - "CI.Standard.E4.Flex"
+      - "CI.Standard.A1.Flex"
+    default: CI.Standard.E4.Flex
+    title: APISIX Dashboard Container Instance Shape
+    required: true
+    dependsOn:
+      compartmentId: container_instance_compartment_ocid
+
+  container_instance_flex_shape_ocpus_apisix_dashboard:
+    visible:
+      eq:
+        - container_instance_compute_shape_apisix_dashboard
+        - "CI.Standard.E4.Flex"
+    type: integer
+    default: 1
+    title: APISIX Dashboard Flex Shape OCPUs
+    minimum: 1
+    maximum: 64
+    required: false
+
+  container_instance_flex_shape_memory_in_gbs_apisix_dashboard:
+    visible:
+      eq:
+        - container_instance_compute_shape_apisix
+        - "CI.Standard.E4.Flex"
+    type: integer
+    default: 4
+    title: APISIX Dashboard Flex Shape Memory
+    minimum: 1
+    maximum: 64
+    required: false
+
+  container_instance_image_url_apisix_dashboard:
+    type: string
+    required: true
+    title: APISIX Dashboard docker image download URL
+
+  is_public_ip_assigned_apisix_dashboard:
+    type: boolean
+    required: true
+    title: Is need a public IP?
+
+  container_restart_policy_apisix_dashboard:
+    type: enum
+    title: Restart policy for etcd container instance
+    description: Restart policy for etcd container instance
+    enum:
+      - "ALWAYS"
+      - "NEVER"
+      - "ON_FAILURE"
+    required: true
+    default: "ALWAYS"
+
+  container_instance_tag_apisix_dashboard:
+    type: string
+    required: true
+    title: APISIX Dashboard Tag name
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#-----------------------------------------------------------------------------------------------------------------------
+
+######################################################
+##############     NETWORK VARIABLES     #############
+######################################################
+
+  network_compartment_ocid:
+    type: oci:identity:compartment:id
+    required: true
+    title: Network Compartment
+    description: The compartment in which to create all Network resources
+    default: compartment_ocid
+
+
+  # Network Type Options
+  network_strategy:
+    type: enum
+    title: Network Strategy
+    description: Create or use existing Network Stack (VCN and Subnet)
+    enum:
+      - "Create New VCN and Subnet"
+      - "Use Existing VCN and Subnet"
+    required: true
+    default: "Create New VCN and Subnet"
+
+
+  # Network Configuration
+  network_configuration_strategy:
+    visible: #($network_strategy  == ""Create New VCN and Subnet"")
+      eq:
+        - network_strategy
+        - "Create New VCN and Subnet"
+    type: enum
+    title: Configuration Strategy
+    description: Use recommended configuration or customize it
+    enum:
+      - "Use Recommended Configuration"
+      - "Customize Network Configuration"
+    required: true
+    default: "Use Recommended Configuration"
+
+
+
+######## VCN ########
+
+  vcn_display_name:
+    visible: #($network_strategy  == ""Create New VCN and Subnet"") AND (network_configuration_strategy ==  "Customize Network Configuration")
+      and:
+        - eq:
+          - network_strategy
+          - "Create New VCN and Subnet"
+        - eq:
+          - network_configuration_strategy
+          - "Customize Network Configuration"
+    type: string
+    required: true
+    title: Name
+    description: The name of the new Virtual Cloud Network (VCN)
+
+  vcn_id:
+    visible: #($network_strategy  == "Use Existing VCN and Subnet")
+      eq:
+        - network_strategy
+        - "Use Existing VCN and Subnet"
+    type: oci:core:vcn:id
+    dependsOn:
+      compartmentId: network_compartment_ocid
+    required: true
+    title: Existing VCN
+    description: An existing Virtual Cloud Network (VCN) in which to create the compute instances, network resources, and load balancers. If not specified, a new VCN is created.
+
+  vcn_cidr_block:
+    visible: #($network_strategy  == ""Create New VCN and Subnet"") AND (network_configuration_strategy ==  "Customize Network Configuration")
+      and:
+        - eq:
+          - network_strategy
+          - "Create New VCN and Subnet"
+        - eq:
+          - network_configuration_strategy
+          - "Customize Network Configuration"
+    type: string
+    required: true
+    pattern: "^(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9]).(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9]).(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9]).(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\\/(3[0-2]|[1-2]?[0-9])$"
+    title: CIDR Block
+    description: The CIDR of the new Virtual Cloud Network (VCN). If you plan to peer this VCN with another VCN, the VCNs must not have overlapping CIDRs.
+
+  vcn_dns_label:
+    visible: #($network_strategy  == ""Create New VCN and Subnet"") AND (network_configuration_strategy ==  "Customize Network Configuration")
+      and:
+        - eq:
+          - network_strategy
+          - "Create New VCN and Subnet"
+        - eq:
+          - network_configuration_strategy
+          - "Customize Network Configuration"
+    type: string
+    required: true
+    title: DNS Label
+    maxLenght: 15
+    description: VCN DNS Label. Only letters and numbers, starting with a letter. 15 characters max.
+
+######## MANAGEMENT SUBNET ########
+######## PUBLIC SUBNET ########
+  subnet_public_display_name:
+    visible: #($network_strategy  == ""Create New VCN and Subnet"")
+      eq:
+        - network_strategy
+        - "Create New VCN and Subnet"
+    type: string
+    required: true
+    title: Name
+    description: The name of the new Public Subnet
+
+  subnet_public_cidr_block:
+    visible: #($network_strategy  == ""Create New VCN and Subnet"")
+      eq:
+        - network_strategy
+        - "Create New VCN and Subnet"
+    type: string
+    pattern: "^(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9]).(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9]).(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9]).(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\\/(3[0-2]|[1-2]?[0-9])$"
+    required: true
+    title: CIDR Block
+    description: The CIDR of the new Subnet. The new subnet's CIDR should not overlap with any other subnet CIDRs.
+
+  subnet_public_id:
+    visible: #($network_strategy  == "Use Existing VCN and Subnet")
+      eq:
+        - network_strategy
+        - "Use Existing VCN and Subnet"
+    type: oci:core:subnet:id
+    dependsOn:
+      vcnId: vcn_id
+      compartmentId: network_compartment_ocid
+    default: ''
+    required: true
+    title: Existing Subnet
+    description: An existing Management subnet. This subnet must already be present in the chosen VCN.
+
+  subnet_public_dns_label:
+    visible: #($network_strategy  == ""Create New VCN and Subnet"")
+      eq:
+        - network_strategy
+        - "Create New VCN and Subnet"
+    type: string
+    required: true
+    title: DNS Label
+    maxLenght: 15
+    description: Subnet DNS Label. Only letters and numbers, starting with a letter. 15 characters max.
+
+
+######## PRIVATE SUBNET ########
+  subnet_private_display_name:
+    visible: #($network_strategy  == ""Create New VCN and Subnet"")
+      eq:
+        - network_strategy
+        - "Create New VCN and Subnet"
+    type: string
+    required: true
+    title: Name
+    description: The name of the new Public Subnet
+
+  subnet_private_cidr_block:
+    visible: #($network_strategy  == ""Create New VCN and Subnet"")
+      eq:
+        - network_strategy
+        - "Create New VCN and Subnet"
+    type: string
+    pattern: "^(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9]).(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9]).(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9]).(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\\/(3[0-2]|[1-2]?[0-9])$"
+    required: true
+    title: CIDR Block
+    description: The CIDR of the new Subnet. The new subnet's CIDR should not overlap with any other subnet CIDRs.
+
+  subnet_private_id:
+    visible: #($network_strategy  == "Use Existing VCN and Subnet")
+      eq:
+        - network_strategy
+        - "Use Existing VCN and Subnet"
+    type: oci:core:subnet:id
+    dependsOn:
+      vcnId: vcn_id
+      compartmentId: network_compartment_ocid
+    default: ''
+    required: true
+    title: Existing Subnet
+    description: An existing Management subnet. This subnet must already be present in the chosen VCN.
+
+  subnet_private_dns_label:
+    visible: #($network_strategy  == ""Create New VCN and Subnet"")
+      eq:
+        - network_strategy
+        - "Create New VCN and Subnet"
+    type: string
+    required: true
+    title: DNS Label
+    maxLenght: 15
+    description: Subnet DNS Label. Only letters and numbers, starting with a letter. 15 characters max.
+
+######################################################
+##############    SECURITY VARIABLES     #############
+######################################################
+
+
+  nsg_configuration_strategy:
+    visible: true
+    type: enum
+    title: Network Security Group Configuration
+    description: Choose Network Security Rules Strategy
+    enum:
+      - "Use Recommended Configuration"
+      - "Customize Network Security Group"
+    required: true
+    default: "Use Recommended Configuration"
+
+
+  nsg_display_name:
+    type: string
+    required: false
+    title: Name
+
+  nsg_ssh_port:
+    type: number
+    required: false
+    default: 22
+    title: SSH Port Number
+
+  nsg_http_port:
+    type: number
+    required: false
+    default: 80
+    title: HTTP Port Number
+
+  nsg_https_port:
+    type: number
+    required: false
+    default: 443
+    title: HTTPS Port Number
+
+
+  nsg_apisix_9180_port:
+    type: number
+    required: false
+    default: 9180
+    title: APISIX 9180 Port
+
+  nsg_apisix_9080_port:
+    type: number
+    required: false
+    default: 9080
+    title: APISIX 9080 Port
+
+
+  nsg_apisix_9091_port:
+    type: number
+    required: false
+    default: 9091
+    title: APISIX 9091 Port
+
+
+  nsg_apisix_9443_port:
+    type: number
+    required: false
+    default: 9443
+    title: APISIX 9443 Port
+
+  nsg_apisix_9092_port:
+    type: number
+    required: false
+    default: 9092
+    title: APISIX 9092 Port
+
+  nsg_apisix_dashboard_9000_port:
+    type: number
+    required: false
+    default: 9000
+    title: APISIX 9000 Port
+
+
+  nsg_source_cidr:
+    type: string
+    required: false
+    default: "0.0.0.0/0"
+    title: Allowed Ingress Traffic (CIDR Block)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#############################################
+###########    OUTPUT GROUPS     ############
+#############################################
+
+outputGroups:
+  - title: "Instance Management"
+    outputs:
+      - instance_public_ip
+      - instance_private_ip
+
+
+#############################################
+##############     OUTPUTS     ##############
+#############################################
+
+outputs:
+  instance_https_url:
+    type: link
+    title: Open Application URL
+    visible: false
+
+  instance_public_ip:
+    type: link
+    title: Public IP
+    visible: #($mgmt_subnet_type == "Public Subnet")
+      eq:
+      - mgmt_subnet_type
+      - "Public Subnet"
+
+  instance_private_ip:
+    type: link
+    title: Private IP
+    visible: true
+
+primaryOutputButton: instance_https_url
