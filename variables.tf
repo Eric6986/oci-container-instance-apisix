@@ -405,10 +405,6 @@ variable "nsg_config_enum" {
   }
 }
 
-variable "ssh_public_key" {
-  description = "SSH Public Key"
-}
-
 variable "availability_domain_name" {
   default     = ""
   description = "Availability Domain name, if non-empty takes precedence over availability_domain_number"

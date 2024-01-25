@@ -7,7 +7,7 @@ version: "20231130"
 
 locale: "en"
 variableGroups:
-  - title: "Hidden Variable Group" #------OK------------------------------------
+  - title: "Hidden Variable Group"
     visible: false
     variables:
       #"variables used internally - not exposed to end user"
@@ -17,14 +17,12 @@ variableGroups:
       - network_strategy_enum
       - subnet_type_enum
       - nsg_config_enum
-      - ssh_public_key
 
-  - title: "Container Instance Generic Configuration" #------OK------------------------------------
+  - title: "Container Instance Generic Configuration"
     variables:
       - container_instance_compartment_ocid
 
-
-  - title: "Container Instance Configuration for ETCD" #------OK------------------------------------
+  - title: "Container Instance Configuration for ETCD"
     variables:
       - container_instance_display_name_etcd
       - container_instance_hostname_label_etcd
@@ -35,9 +33,10 @@ variableGroups:
       - is_public_ip_assigned_etcd
       - container_restart_policy_etcd
       - container_instance_tag_etcd
+      - availability_domain_name
 
 
-  - title: "Container Instance Configuration for APISIX" #------OK------------------------------------
+  - title: "Container Instance Configuration for APISIX"
     variables:
       - container_instance_display_name_apisix
       - container_instance_hostname_label_apisix
@@ -48,8 +47,9 @@ variableGroups:
       - is_public_ip_assigned_apisix
       - container_restart_policy_apisix
       - container_instance_tag_apisix
+      - availability_domain_name
 
-  - title: "Container Instance Configuration for APISIX Dashboard" #------OK------------------------------------
+  - title: "Container Instance Configuration for APISIX Dashboard"
     variables:
       - container_instance_display_name_apisix_dashboard
       - container_instance_hostname_label_apisix_dashboard
@@ -60,6 +60,7 @@ variableGroups:
       - is_public_ip_assigned_apisix_dashboard
       - container_restart_policy_apisix_dashboard
       - container_instance_tag_apisix_dashboard
+      - availability_domain_name
 
 
   - title: "Virtual Cloud Network"
@@ -87,6 +88,7 @@ variableGroups:
       - subnet_public_display_name
       - subnet_public_dns_label
       - subnet_public_cidr_block
+      - subnet_public_type
       - nsg_configuration_strategy
 
 
@@ -104,8 +106,33 @@ variableGroups:
       - subnet_private_display_name
       - subnet_private_dns_label
       - subnet_private_cidr_block
+      - subnet_private_type
       - nsg_configuration_strategy
 
+
+  - title: "Public Subnet Network Security Group"
+    visible: #($nsg_configuration_strategy  ==  "Customize Network Security Group")
+      eq:
+        - nsg_configuration_strategy
+        - "Customize Network Security Group"
+    variables:
+      - nsg_display_name
+      - nsg_source_cidr
+      - nsg_ssh_port
+      - nsg_http_port
+      - nsg_https_port
+      - nsg_etcd_port
+      - nsg_apisix_9180_port
+      - nsg_apisix_9080_port
+      - nsg_apisix_9091_port
+      - nsg_apisix_9443_port
+      - nsg_apisix_9092_port
+      - nsg_apisix_dashboard_9000_port
+
+  - title: "Additional Configuration Options"
+    variables:
+      - tag_key_name
+      - tag_value
 
 ######################################################
 ##############          VARIABLES        #############
@@ -133,14 +160,20 @@ variables:
     required: false
     description: Availability Domain Number (Not used)
 
-  ssh_public_key:
-    type: oci:core:ssh:publickey
+######################################################
+##############     GENERAL VARIABLES     #############
+######################################################
+
+  tag_key_name:
+    type: string
     required: true
-    title: Public SSH Key string
-    description: Public SSH Key to access VM via SSH (Not used)
+    title: Tag key name
 
+  tag_value:
+    type: string
+    required: true
+    title: Tag value
 
-#-----------------------------------------------------------------------------------------------------------------------
 
 ######################################################
 #####  Container Instance Generic Configuration  #####
@@ -155,7 +188,6 @@ variables:
     default: compartment_ocid
 
 
-#-----------------------------------------------------------------------------------------------------------------------
 
 ######################################################
 #######   CONTAINER INSTANCE VARIABLES - ETCD  #######
@@ -316,7 +348,6 @@ variables:
 
 
 
-#-----------------------------------------------------------------------------------------------------------------------
 ######################################################
 ## CONTAINER INSTANCE VARIABLES - APISIX DASHBOARD  ##
 ######################################################
@@ -394,20 +425,6 @@ variables:
     required: true
     title: APISIX Dashboard Tag name
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-#-----------------------------------------------------------------------------------------------------------------------
 
 ######################################################
 ##############     NETWORK VARIABLES     #############
@@ -644,6 +661,11 @@ variables:
     default: 443
     title: HTTPS Port Number
 
+  nsg_etcd_port:
+    type: number
+    required: false
+    default: 2379
+    title: ETCD Port Number
 
   nsg_apisix_9180_port:
     type: number
@@ -657,13 +679,11 @@ variables:
     default: 9080
     title: APISIX 9080 Port
 
-
   nsg_apisix_9091_port:
     type: number
     required: false
     default: 9091
     title: APISIX 9091 Port
-
 
   nsg_apisix_9443_port:
     type: number
@@ -683,72 +703,11 @@ variables:
     default: 9000
     title: APISIX 9000 Port
 
-
   nsg_source_cidr:
     type: string
     required: false
     default: "0.0.0.0/0"
     title: Allowed Ingress Traffic (CIDR Block)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 #############################################
