@@ -1,7 +1,3 @@
-###
-# compute.tf outputs
-###
-
 output "container_instance_etcd_id" {
   value = oci_container_instances_container_instance.demo_container_instance_etcd.id
 }

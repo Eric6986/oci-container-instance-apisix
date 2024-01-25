@@ -2,13 +2,9 @@
 
 ## Project description
 
-The example code will show how to use the OCI container instance to build a APISIX gateway.
+The example code will show how to use the OCI container instance to build a APISIX gateway. Before you apply the plan, you can try to use the OpenTofu https://opentofu.org/ to replace the terraform command. It is a fork of Terraform that is open-source, community-driven, and managed by the Linux Foundation. All the command should be same with Terraform. Try it!
 
 ## How to use code
-
-```
-Before you apply the plan, you can try to use the OpenTofu https://opentofu.org/ to replace the terraform command. It is a fork of Terraform that is open-source, community-driven, and managed by the Linux Foundation. All the command should be same with Terraform. Try it!
-```
 
 ### STEP 1
 

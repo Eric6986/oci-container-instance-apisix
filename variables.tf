@@ -15,11 +15,6 @@ variable "availability_domain_number" {
   description = "OCI Availability Domains: 1,2,3  (subject to region availability)"
 }
 
-
-
-#----------------Hidden Variable Group END----------------------------------------------------------------------
-
-
 ############################
 #  Container Instance Configuration - etcd  #
 ############################
@@ -118,10 +113,6 @@ variable "container_instance_tag_apisix" {
   default = "APISIX"
 }
 
-
-
-
-
 ############################
 #  Container Instance Configuration - APISIX Dashboard  #
 ############################
@@ -170,43 +161,6 @@ variable "container_instance_tag_apisix_dashboard" {
   description = "APISIX Dashboard tag name"
   default = "APISIX Dashboard"
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 ############################
 #  Network Configuration   #
@@ -372,10 +326,6 @@ variable "tag_value" {
   description = "Free-form tag value"
   default     = "oci-container-instance-template"
 }
-
-
-
-
 
 ######################
 #    Enum Values     #

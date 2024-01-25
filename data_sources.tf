@@ -27,8 +27,3 @@ data  "oci_core_vnic" "apisix_dashboard_vnic_0_info" {
   #Required
   vnic_id = oci_container_instances_container_instance.demo_container_instance_apisix_dashboard.vnics[0].vnic_id
 }
-
-# # Generate spring boot configuration file
-# data "local_file" "etcd_config_template" {
-#     filename = "${path.module}/config/conf.yaml"
-# }
